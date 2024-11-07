@@ -1,24 +1,55 @@
 const std = @import("std");
+const physics = @import("physics.zig");
+const Vec2f = @import("vector.zig").Vec2f;
+const renderer = @import("renderer.zig");
+
+const STEP_COUNT = 300;
+const FPS = 30;
+const CACHE_DIR = "./replay_cache";
+const OUTPUT_DIR = "./replay.gif";
+
+const SIZE = Vec2f { .x = 1000, .y = 1000 };
+const PARTICLE_COUNT = 1000;
+
+const DT = @divTrunc(1.0, @as(f32, FPS));
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
+    const alloc = arena.allocator();
 
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
+    var sim = try physics.PhysicsEnvironment.init(
+        alloc,
+        .{
+            .size = SIZE,
+            .top_left = Vec2f.ZERO,
+        },
+        PARTICLE_COUNT,
+        1000.0,
+        100000000.0,
+        std.crypto.random
+    );
+    defer sim.deinit();
 
-    try bw.flush(); // don't forget to flush!
-}
+    const opts = std.Progress.Options {
+        .estimated_total_items = STEP_COUNT,
+        .root_name = "gravity simulation",
+    };
+    var pb = std.Progress.start(opts);
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+    for(0..STEP_COUNT) |i| {
+        sim.performStep(DT);
+
+        const filename = try std.fmt.allocPrint(alloc, "frame{}.png", .{i});
+        const path = try std.fs.path.joinZ(alloc, &[_][]const u8{CACHE_DIR, filename});
+
+        renderer.cache_frame(path.ptr, .{ .base = sim.particles.items.ptr, .len = sim.particles.items.len}, sim.bounds);
+        
+        pb.completeOne();
+    }
+
+    renderer.build_gif(FPS, CACHE_DIR, OUTPUT_DIR);
+
+    pb.end();
 }

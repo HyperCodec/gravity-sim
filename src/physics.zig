@@ -3,7 +3,7 @@ const Vec2f = @import("vector.zig").Vec2f;
 
 pub const G = 6.67e-11;
 
-pub const PhysicsParticle = struct {
+pub const PhysicsParticle = extern struct {
     const Self = @This();
     
     mass: f32,
@@ -77,7 +77,7 @@ pub const PhysicsEnvironment = struct {
     }
 
     pub fn applyGravity(self: *Self) void {
-        // TODO data parallelism
+        // TODO data parallelism (probably with spice)
         for(0..self.particles.items.len) |i| {
             var p1 = &self.particles.items[i];
 
@@ -119,7 +119,7 @@ pub const PhysicsEnvironment = struct {
     }
 };
 
-pub const EnvironmentBounds = struct {
+pub const EnvironmentBounds = extern struct {
     const Self = @This();
 
     top_left: Vec2f,

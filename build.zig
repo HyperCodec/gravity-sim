@@ -36,6 +36,25 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const zignal = b.dependency("zignal", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    exe.root_module.addImport("zignal", zignal.module("zignal"));
+
+    const zigimg = b.dependency("zigimg", .{
+        .target = target,
+        .optimize = optimize
+    });
+
+    exe.root_module.addImport("zigimg", zigimg.module("zigimg"));
+
+    // rust renderer lib
+    exe.linkLibC();
+    exe.addLibraryPath(.{ .cwd_relative = "./renderer/target/release/" });
+    exe.linkSystemLibrary("renderer");
+
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).

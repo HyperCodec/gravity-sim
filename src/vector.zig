@@ -3,7 +3,7 @@ pub const std = @import("std");
 pub const Vec2f = Vec2(f32);
 
 pub fn Vec2(comptime T: type) type {
-    return struct {
+    return extern struct {
         const Self = @This();
 
         pub const ZERO = Self { .x = 0, .y = 0 };
@@ -55,15 +55,15 @@ pub fn Vec2(comptime T: type) type {
 
         pub fn div(self: Self, other: Self) Self {
             return .{
-                .x = @divExact(self.x, other.x),
-                .y = @divExact(self.y, other.y),
+                .x = self.x / other.x,
+                .y = self.y / other.y,
             };
         }
 
         pub fn divOne(self: Self, n: T) Self {
             return .{
-                .x = @divExact(self.x, n),
-                .y = @divExact(self.y, n),
+                .x = self.x / n,
+                .y = self.y / n,
             };
         }
 
