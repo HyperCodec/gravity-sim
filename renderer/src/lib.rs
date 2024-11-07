@@ -24,7 +24,7 @@ pub struct EnvironmentBounds {
 
 #[no_mangle]
 pub extern "C" fn cache_frame(dir: *const c_char, particles: CSlice<PhysicsParticle>, bounds: EnvironmentBounds) {
-    let mut image: Image<Rgba> = Image::new(bounds.size.x as u32, bounds.size.y as u32, Rgba::transparent());
+    let mut image: Image<Rgba> = Image::new(bounds.size.x as u32, bounds.size.y as u32, Rgba::black());
 
     for particle in particles.as_ref() {
         let circle: Ellipse<Rgba> = Ellipse {

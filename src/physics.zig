@@ -25,9 +25,11 @@ pub const PhysicsParticle = extern struct {
         return self.mass * other.mass * G / distSquared;
     }
 
-    pub fn pullTowardOther(self: *Self, other: Self) void {
-        const strength = self.gravityStrength(other);
+    pub fn pullTowardOther(self: *Self, other: Self, dt: f32) void {
+        const strength = self.gravityStrength(other) * dt;
         const direction = self.position.sub(other.position).norm();
+
+        // std.debug.print("strength: {}\n", .{strength});
 
         self.addForce(direction.multOne(strength));
     }
@@ -76,7 +78,7 @@ pub const PhysicsEnvironment = struct {
         self.* = undefined;
     }
 
-    pub fn applyGravity(self: *Self) void {
+    pub fn applyGravity(self: *Self, dt: f32) void {
         // TODO data parallelism (probably with spice)
         for(0..self.particles.items.len) |i| {
             var p1 = &self.particles.items[i];
@@ -86,7 +88,7 @@ pub const PhysicsEnvironment = struct {
 
                 const p2 = self.particles.items[j];
 
-                p1.pullTowardOther(p2);
+                p1.pullTowardOther(p2, dt);
             }
         }
     }
@@ -96,6 +98,7 @@ pub const PhysicsEnvironment = struct {
         for(self.particles.items) |*p| {
             p.updatePosition(dt);
 
+            
             if(!self.bounds.isInHorizontalBounds(p.position)) {
                 // wrap around screen
                 p.position.x = bottomRight.x - p.position.x;
@@ -114,7 +117,7 @@ pub const PhysicsEnvironment = struct {
     }
 
     pub fn performStep(self: *Self, dt: f32) void {
-        self.applyGravity();
+        self.applyGravity(dt);
         self.stepParticles(dt);
     }
 };

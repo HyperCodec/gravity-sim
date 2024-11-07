@@ -11,7 +11,7 @@ const OUTPUT_DIR = "./replay.gif";
 const SIZE = Vec2f { .x = 1000, .y = 1000 };
 const PARTICLE_COUNT = 1000;
 
-const DT = @divTrunc(1.0, @as(f32, FPS));
+const DT = 1.0 / @as(f32, FPS);
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -27,10 +27,12 @@ pub fn main() !void {
         },
         PARTICLE_COUNT,
         1000.0,
-        100000000.0,
+        1.0e11,
         std.crypto.random
     );
     defer sim.deinit();
+
+    // std.debug.print("dt: {}\n", .{DT});
 
     const opts = std.Progress.Options {
         .estimated_total_items = STEP_COUNT,
@@ -39,6 +41,7 @@ pub fn main() !void {
     var pb = std.Progress.start(opts);
 
     for(0..STEP_COUNT) |i| {
+        // std.debug.print("{}\n", .{sim.particles.items[0]});
         sim.performStep(DT);
 
         const filename = try std.fmt.allocPrint(alloc, "frame{}.png", .{i});
