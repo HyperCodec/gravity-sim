@@ -1,0 +1,5 @@
+/zig-out/
+/.zig-cache/
+/replay_cache/
+/replay.gif
+**/target/
