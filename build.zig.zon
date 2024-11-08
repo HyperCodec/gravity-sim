@@ -16,14 +16,6 @@
     // Once all dependencies are fetched, `zig build` no longer requires
     // internet connectivity.
     .dependencies = .{
-        .zignal = .{
-            .url = "git+https://github.com/bfactory-ai/zignal#5b25e52c84f8d2a08ff3a735852b046f1188d89d",
-            .hash = "1220189e22c83e2f310f2495946bbd1ed5d0f2a49c116ccc50aeb7dfd3ae0fc34c06",
-        },
-        .zigimg = .{
-            .url = "git+https://github.com/zigimg/zigimg#5b5d718159c6ec223a54c9bb960690576e5df9c2",
-            .hash = "122040d9cc905342547e1e9da227a7f16fae5e7ae23134cb62aaef64c5b2c4f58828",
-        },
     },
     .paths = .{
         "build.zig",

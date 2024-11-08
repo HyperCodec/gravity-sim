@@ -19,6 +19,8 @@ pub fn main() !void {
 
     const alloc = arena.allocator();
 
+    const cpuCores = try std.Thread.getCpuCount();
+
     var sim = try physics.PhysicsEnvironment.init(
         alloc,
         .{
@@ -28,6 +30,7 @@ pub fn main() !void {
         PARTICLE_COUNT,
         1000.0,
         1.0e11,
+        cpuCores,
         std.crypto.random
     );
     defer sim.deinit();
@@ -42,7 +45,7 @@ pub fn main() !void {
 
     for(0..STEP_COUNT) |i| {
         // std.debug.print("{}\n", .{sim.particles.items[0]});
-        sim.performStep(DT);
+        try sim.performStep(DT);
 
         const filename = try std.fmt.allocPrint(alloc, "frame{}.png", .{i});
         const path = try std.fs.path.joinZ(alloc, &[_][]const u8{CACHE_DIR, filename});

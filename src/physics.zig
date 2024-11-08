@@ -40,6 +40,7 @@ pub const PhysicsEnvironment = struct {
 
     bounds: EnvironmentBounds,
     particles: std.ArrayList(PhysicsParticle),
+    threadCount: usize,
     allocator: std.mem.Allocator,
 
     pub fn init(
@@ -48,6 +49,7 @@ pub const PhysicsEnvironment = struct {
         particle_count: usize,
         particle_mass_min: f32,
         particle_mass_max: f32,
+        threadCount: usize,
         rng: std.Random,
     ) !Self {
         var particles = std.ArrayList(PhysicsParticle).init(alloc);
@@ -70,6 +72,7 @@ pub const PhysicsEnvironment = struct {
             .bounds = bounds,
             .allocator = alloc,
             .particles = particles,
+            .threadCount = threadCount,
         };
     }
 
@@ -78,27 +81,47 @@ pub const PhysicsEnvironment = struct {
         self.* = undefined;
     }
 
-    pub fn applyGravity(self: *Self, dt: f32) void {
-        // TODO data parallelism (probably with spice)
-        for(0..self.particles.items.len) |i| {
-            var p1 = &self.particles.items[i];
+    pub fn applyGravity(self: *Self, dt: f32) !void {
+        const tasksPerThread = @divFloor(self.particles.items.len, self.threadCount);
+        
+        var threads = std.ArrayList(std.Thread).init(self.allocator);
+        defer threads.deinit();
 
-            for(0..self.particles.items.len) |j| {
-                if(i == j) continue;
+        for(0..self.threadCount) |threadNum| {
+            const t = try std.Thread.spawn(.{}, applyGravityForRange,
+            .{self, threadNum * tasksPerThread, (threadNum + 1) * tasksPerThread, dt});
+            try threads.append(t);
+        }
 
-                const p2 = self.particles.items[j];
+        for(threads.items) |t| {
+            t.join();
+        }
+    }
 
-                p1.pullTowardOther(p2, dt);
-            }
+    fn applyGravityForRange(self: *Self, min: usize, max: usize, dt: f32) void {
+        for(min..max) |i| {
+            self.applyGravitySingular(i, dt);
+        }
+    }
+
+    fn applyGravitySingular(self: *Self, i: usize, dt: f32) void {
+        var p1 = &self.particles.items[i];
+
+        for(0..self.particles.items.len) |j| {
+            if(i == j) continue;
+
+            const p2 = self.particles.items[j];
+
+            p1.pullTowardOther(p2, dt);
         }
     }
 
     pub fn stepParticles(self: *Self, dt: f32) void {
+        // TODO parallelize
         const bottomRight = self.bounds.bottomRight();
         for(self.particles.items) |*p| {
             p.updatePosition(dt);
 
-            
             if(!self.bounds.isInHorizontalBounds(p.position)) {
                 // wrap around screen
                 p.position.x = bottomRight.x - p.position.x;
@@ -116,8 +139,8 @@ pub const PhysicsEnvironment = struct {
         }
     }
 
-    pub fn performStep(self: *Self, dt: f32) void {
-        self.applyGravity(dt);
+    pub fn performStep(self: *Self, dt: f32) !void {
+        try self.applyGravity(dt);
         self.stepParticles(dt);
     }
 };

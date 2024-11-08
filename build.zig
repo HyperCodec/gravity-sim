@@ -36,20 +36,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const zignal = b.dependency("zignal", .{
-        .target = target,
-        .optimize = optimize,
-    });
-
-    exe.root_module.addImport("zignal", zignal.module("zignal"));
-
-    const zigimg = b.dependency("zigimg", .{
-        .target = target,
-        .optimize = optimize
-    });
-
-    exe.root_module.addImport("zigimg", zigimg.module("zigimg"));
-
     // rust renderer lib
     exe.linkLibC();
     exe.addLibraryPath(.{ .cwd_relative = "./renderer/target/release/" });
