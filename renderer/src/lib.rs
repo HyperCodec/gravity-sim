@@ -46,7 +46,6 @@ pub extern "C" fn cache_frame(dir: *const c_char, particles: CSlice<PhysicsParti
     }
 
     let path = unsafe { CStr::from_ptr(dir).to_str() }.unwrap();
-    std::fs::create_dir_all(path).unwrap();
     image.save(ImageFormat::Png, path).unwrap();
 }
 
