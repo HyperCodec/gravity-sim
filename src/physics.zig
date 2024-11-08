@@ -27,7 +27,7 @@ pub const PhysicsParticle = extern struct {
 
     pub fn pullTowardOther(self: *Self, other: Self, dt: f32) void {
         const strength = self.gravityStrength(other) * dt;
-        const direction = self.position.sub(other.position).norm();
+        const direction = other.position.sub(self.position).norm();
 
         // std.debug.print("strength: {}\n", .{strength});
 

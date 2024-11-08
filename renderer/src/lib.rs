@@ -1,7 +1,7 @@
-use std::{ffi::{c_char, CStr}, fs};
+use std::{ffi::{c_char, CStr}, fs, iter::Filter};
 
 use cslice::CSlice;
-use ril::{fill::SolidFill, Ellipse, Image, ImageFormat, ImageSequence, Rgba};
+use ril::{encodings::png::FilterType, fill::SolidFill, filter::{Brightness, Mask}, Ellipse, Image, ImageFormat, ImageSequence, Rgba};
 
 #[repr(C)]
 pub struct Vec2f {
@@ -22,27 +22,20 @@ pub struct EnvironmentBounds {
     pub size: Vec2f,
 }
 
+const PARTICLE_TEXTURE_DATA: &[u8] = include_bytes!("particle.png");
+
 #[no_mangle]
 pub extern "C" fn cache_frame(dir: *const c_char, particles: CSlice<PhysicsParticle>, bounds: EnvironmentBounds) {
     let mut image: Image<Rgba> = Image::new(bounds.size.x as u32, bounds.size.y as u32, Rgba::black());
+    let particle_texture: Image<Rgba> = Image::from_bytes(ImageFormat::Png, PARTICLE_TEXTURE_DATA).unwrap();
 
     for particle in particles.as_ref() {
-        let circle: Ellipse<Rgba> = Ellipse {
-            position: (
-                (particle.position.x - bounds.top_left.x) as u32,
-                (particle.position.y - bounds.top_left.y) as u32
-            ),
-            radii: (5, 5),
-            // TODO radial gradient fill.
-            fill: Some(SolidFill::new(Rgba {
-                r: 255,
-                g: 255,
-                b: 255,
-                a: 185,
-            })),
-            ..Default::default()
-        };
-        image.draw(&circle);
+        let (left, top) = (
+            particle.position.x - particle_texture.width() as f32 / 2.,
+            particle.position.y - particle_texture.height() as f32 / 2.
+        );
+
+        image.paste_with_mask(left as u32, top as u32, &particle_texture, &particle_texture.clone().into());
     }
 
     let path = unsafe { CStr::from_ptr(dir).to_str() }.unwrap();

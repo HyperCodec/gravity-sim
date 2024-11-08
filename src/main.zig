@@ -10,6 +10,8 @@ const OUTPUT_DIR = "./replay.gif";
 
 const SIZE = Vec2f { .x = 1000, .y = 1000 };
 const PARTICLE_COUNT = 1000;
+const PARTICLE_MASS_MIN = 1000.0;
+const PARTICLE_MASS_MAX = 1.0e6;
 
 const DT = 1.0 / @as(f32, FPS);
 
@@ -26,8 +28,8 @@ pub fn main() !void {
             .top_left = Vec2f.ZERO,
         },
         PARTICLE_COUNT,
-        1000.0,
-        1.0e11,
+        PARTICLE_MASS_MIN,
+        PARTICLE_MASS_MAX,
         std.crypto.random
     );
     defer sim.deinit();
