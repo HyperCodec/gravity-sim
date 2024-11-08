@@ -116,32 +116,53 @@ pub const PhysicsEnvironment = struct {
         }
     }
 
-    pub fn stepParticles(self: *Self, dt: f32) void {
-        // TODO parallelize
+    pub fn stepParticles(self: *Self, dt: f32) !void {
+        const tasksPerThread = @divFloor(self.particles.items.len, self.threadCount);
+        
+        var threads = std.ArrayList(std.Thread).init(self.allocator);
+        defer threads.deinit();
+
         const bottomRight = self.bounds.bottomRight();
-        for(self.particles.items) |*p| {
-            p.updatePosition(dt);
+        for(0..self.threadCount) |threadNum| {
+            const t = try std.Thread.spawn(.{}, stepParticlesForRange,
+            .{self, bottomRight, threadNum * tasksPerThread, (threadNum + 1) * tasksPerThread, dt});
+            try threads.append(t);
+        }
 
-            if(!self.bounds.isInHorizontalBounds(p.position)) {
-                // wrap around screen
-                p.position.x = bottomRight.x - p.position.x;
+        for(threads.items) |t| {
+            t.join();
+        }
+    }
 
-                // make sure wrapped version is still in bounds
-                p.position.x = @min(@max(p.position.x, self.bounds.top_left.x), bottomRight.x);
-            }
+    fn stepParticlesForRange(self: *Self, bottomRight: Vec2f, min: usize, max: usize, dt: f32) void {
+        for(min..max) |i| {
+            const p = &self.particles.items[i];
+            self.stepParticleSingular(bottomRight, p, dt);
+        }
+    }
 
-            if(!self.bounds.isInVerticalBounds(p.position)) {
-                // same thing but vertical
+    fn stepParticleSingular(self: *Self, bottomRight: Vec2f, p: *PhysicsParticle, dt: f32) void {
+        p.updatePosition(dt);
 
-                p.position.y = bottomRight.y - p.position.y;
-                p.position.y = @min(@max(p.position.y, self.bounds.top_left.y), bottomRight.y);
-            }
+        if(!self.bounds.isInHorizontalBounds(p.position)) {
+            // wrap around screen
+            p.position.x = bottomRight.x - p.position.x;
+
+            // make sure wrapped version is still in bounds
+            p.position.x = @min(@max(p.position.x, self.bounds.top_left.x), bottomRight.x);
+        }
+
+        if(!self.bounds.isInVerticalBounds(p.position)) {
+            // same thing but vertical
+
+            p.position.y = bottomRight.y - p.position.y;
+            p.position.y = @min(@max(p.position.y, self.bounds.top_left.y), bottomRight.y);
         }
     }
 
     pub fn performStep(self: *Self, dt: f32) !void {
         try self.applyGravity(dt);
-        self.stepParticles(dt);
+        try self.stepParticles(dt);
     }
 };
 
