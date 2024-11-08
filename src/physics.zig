@@ -20,18 +20,23 @@ pub const PhysicsParticle = extern struct {
         self.position = self.position.add(movement);
     }
 
+    pub fn gravityAccel(self: Self, other: Self) f32 {
+        const distSquared = self.position.sub(other.position).magSquared();
+        return other.mass * G / distSquared;
+    }
+
     pub fn gravityStrength(self: Self, other: Self) f32 {
         const distSquared = self.position.sub(other.position).magSquared();
         return self.mass * other.mass * G / distSquared;
     }
 
     pub fn pullTowardOther(self: *Self, other: Self, dt: f32) void {
-        const strength = self.gravityStrength(other) * dt;
-        const direction = self.position.sub(other.position).norm();
+        const accel = self.gravityAccel(other) * dt;
+        const direction = other.position.sub(self.position).norm();
 
         // std.debug.print("strength: {}\n", .{strength});
 
-        self.addForce(direction.multOne(strength));
+        self.velocity = self.velocity.add(direction.multOne(accel));
     }
 };
 
@@ -149,14 +154,14 @@ pub const PhysicsEnvironment = struct {
             p.position.x = bottomRight.x - p.position.x;
 
             // make sure wrapped version is still in bounds
-            p.position.x = @min(@max(p.position.x, self.bounds.top_left.x), bottomRight.x);
+            p.position.x = @min(@max(p.position.x, self.bounds.top_left.x + 1e-8), bottomRight.x - 1e-8);
         }
 
         if(!self.bounds.isInVerticalBounds(p.position)) {
             // same thing but vertical
 
             p.position.y = bottomRight.y - p.position.y;
-            p.position.y = @min(@max(p.position.y, self.bounds.top_left.y), bottomRight.y);
+            p.position.y = @min(@max(p.position.y, self.bounds.top_left.y + 1e-8), bottomRight.y - 1e-8);
         }
     }
 

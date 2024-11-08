@@ -28,8 +28,8 @@ pub fn main() !void {
             .top_left = Vec2f.ZERO,
         },
         PARTICLE_COUNT,
-        1000.0,
-        1.0e11,
+        10.0,
+        1.0e12,
         cpuCores,
         std.crypto.random
     );
