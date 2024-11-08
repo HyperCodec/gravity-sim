@@ -56,7 +56,7 @@ pub fn main() !void {
         pb.completeOne();
     }
 
-    renderer.build_gif(FPS, CACHE_DIR, OUTPUT_DIR);
+    renderer.build_gif(STEP_COUNT, FPS, CACHE_DIR, OUTPUT_DIR);
 
     pb.end();
 }

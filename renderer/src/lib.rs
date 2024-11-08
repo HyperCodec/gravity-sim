@@ -1,4 +1,4 @@
-use std::{ffi::{c_char, CStr}, fs, io::ErrorKind};
+use std::{ffi::{c_char, CStr}, io::ErrorKind, path::PathBuf};
 
 use cslice::CSlice;
 use ril::{fill::SolidFill, Ellipse, Image, ImageFormat, ImageSequence, Rgba};
@@ -50,28 +50,13 @@ pub extern "C" fn cache_frame(dir: *const c_char, particles: CSlice<PhysicsParti
 }
 
 #[no_mangle]
-pub extern "C" fn build_gif(_framerate: u32, frames_dir: *const c_char, output_dir: *const c_char) {
+pub extern "C" fn build_gif(frame_count: usize, _framerate: u32, frames_dir: *const c_char, output_dir: *const c_char) {
     let mut gif: ImageSequence<Rgba> = ImageSequence::new();
 
-    let dir = fs::read_dir(unsafe { CStr::from_ptr(frames_dir) }.to_str().unwrap()).unwrap();
-    let mut frame_dirs = Vec::new();
-    for file in dir {
-        if let Ok(file) = file {
-            // println!("{:?}", file.path());
-            frame_dirs.push(file.path());
-        }
-    }
-
-    frame_dirs.sort_by_key(|p| {
-        let name = p.file_name().unwrap();
-        let frame_num = name.to_str().unwrap()
-            .strip_prefix("frame").unwrap()
-            .strip_suffix(".png").unwrap();
-
-        frame_num.parse::<usize>().unwrap()
-    });
-
-    for path in frame_dirs {
+    let frames_dir = unsafe { CStr::from_ptr(frames_dir) }.to_str().unwrap();
+    for i in 0..frame_count {
+        let path = PathBuf::from(frames_dir).join(format!("frame{i}.png"));
+        
         let img = Image::open(path).unwrap();
         gif.push_frame(img.into());
     }
