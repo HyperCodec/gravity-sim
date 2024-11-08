@@ -161,6 +161,7 @@ pub const PhysicsEnvironment = struct {
     }
 
     pub fn performStep(self: *Self, dt: f32) !void {
+        // could prob do channel shenanigans so i dont have to remake all the threads each time.
         try self.applyGravity(dt);
         try self.stepParticles(dt);
     }
