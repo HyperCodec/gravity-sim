@@ -36,6 +36,7 @@ pub fn main() !void {
     defer sim.deinit();
 
     // std.debug.print("dt: {}\n", .{DT});
+    _ = renderer.create_dir_all(CACHE_DIR);
 
     const opts = std.Progress.Options {
         .estimated_total_items = STEP_COUNT,

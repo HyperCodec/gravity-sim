@@ -1,4 +1,4 @@
-use std::{ffi::{c_char, CStr}, fs};
+use std::{ffi::{c_char, CStr}, fs, io::ErrorKind};
 
 use cslice::CSlice;
 use ril::{fill::SolidFill, Ellipse, Image, ImageFormat, ImageSequence, Rgba};
@@ -62,4 +62,20 @@ pub extern "C" fn build_gif(_framerate: u32, frames_dir: *const c_char, output_d
     }
 
     gif.save(ImageFormat::Gif, unsafe { CStr::from_ptr(output_dir) }.to_str().unwrap()).unwrap();
+}
+
+#[no_mangle]
+pub extern "C" fn create_dir_all(path: *const c_char) -> bool {
+    // this function mostly just exists bc zig's fs api is ass rn.
+
+    let path = unsafe { CStr::from_ptr(path) }.to_str().unwrap();
+
+    match std::fs::create_dir_all(path) {
+        Ok(_) => true,
+        Err(e) => if e.kind() == ErrorKind::AlreadyExists {
+            false
+        } else {
+            panic!("{e}")
+        }
+    }
 }
