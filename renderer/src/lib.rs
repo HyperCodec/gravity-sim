@@ -54,11 +54,26 @@ pub extern "C" fn build_gif(_framerate: u32, frames_dir: *const c_char, output_d
     let mut gif: ImageSequence<Rgba> = ImageSequence::new();
 
     let dir = fs::read_dir(unsafe { CStr::from_ptr(frames_dir) }.to_str().unwrap()).unwrap();
+    let mut frame_dirs = Vec::new();
     for file in dir {
         if let Ok(file) = file {
-            let img = Image::open(file.path()).unwrap();
-            gif.push_frame(img.into());
+            // println!("{:?}", file.path());
+            frame_dirs.push(file.path());
         }
+    }
+
+    frame_dirs.sort_by_key(|p| {
+        let name = p.file_name().unwrap();
+        let frame_num = name.to_str().unwrap()
+            .strip_prefix("frame").unwrap()
+            .strip_suffix(".png").unwrap();
+
+        frame_num.parse::<usize>().unwrap()
+    });
+
+    for path in frame_dirs {
+        let img = Image::open(path).unwrap();
+        gif.push_frame(img.into());
     }
 
     gif.save(ImageFormat::Gif, unsafe { CStr::from_ptr(output_dir) }.to_str().unwrap()).unwrap();
