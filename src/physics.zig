@@ -3,6 +3,9 @@ const Vec2f = @import("vector.zig").Vec2f;
 
 pub const G = 6.6743e-11;
 
+const DIST_HARD_MIN = 1.0;
+const DHM_SQUARED = DIST_HARD_MIN * DIST_HARD_MIN;
+
 pub const PhysicsParticle = extern struct {
     const Self = @This();
     
@@ -21,12 +24,12 @@ pub const PhysicsParticle = extern struct {
     }
 
     pub fn gravityAccel(self: Self, other: Self) f32 {
-        const distSquared = self.position.sub(other.position).magSquared();
+        const distSquared = @max(self.position.sub(other.position).magSquared(), DHM_SQUARED);
         return other.mass * G / distSquared;
     }
 
     pub fn gravityStrength(self: Self, other: Self) f32 {
-        const distSquared = @max(self.position.sub(other.position).magSquared(), 1.0);
+        const distSquared = @max(self.position.sub(other.position).magSquared(), DHM_SQUARED);
         return self.mass * other.mass * G / distSquared;
     }
 

@@ -10,6 +10,7 @@ const OUTPUT_DIR = "./replay.gif";
 
 const SIZE = Vec2f { .x = 1000, .y = 1000 };
 const PARTICLE_COUNT = 1000;
+const TIME_SCALE = 5;
 
 const DT = 1.0 / @as(f32, FPS);
 
@@ -46,7 +47,7 @@ pub fn main() !void {
 
     for(0..STEP_COUNT) |i| {
         // std.debug.print("{}\n", .{sim.particles.items[0]});
-        try sim.performStep(DT);
+        try sim.performStep(DT * TIME_SCALE);
 
         const filename = try std.fmt.allocPrint(alloc, "frame{}.png", .{i});
         const path = try std.fs.path.joinZ(alloc, &[_][]const u8{CACHE_DIR, filename});
