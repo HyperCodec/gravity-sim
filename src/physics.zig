@@ -120,8 +120,7 @@ pub const PhysicsEnvironment = struct {
             p1.pullTowardOther(p2, dt);
         }
     }
-
-    // TODO prob some race conditions
+    
     pub fn stepParticles(self: *Self, dt: f32) !void {
         const tasksPerThread = @divFloor(self.particles.items.len, self.threadCount);
         
