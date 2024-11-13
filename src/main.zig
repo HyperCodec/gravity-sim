@@ -13,6 +13,8 @@ const PARTICLE_COUNT = 1000;
 const TIME_SCALE = 5;
 
 const PARTICLE_SIZE = 5; // does not affect simulation, only rendering.
+const PARTICLE_MASS_MIN = 1.0e3;
+const PARTICLE_MASS_MAX = 5.0e11;
 
 const DT = 1.0 / @as(f32, FPS);
 
@@ -31,8 +33,8 @@ pub fn main() !void {
             .top_left = Vec2f.ZERO,
         },
         PARTICLE_COUNT,
-        10.0,
-        1.0e12,
+        PARTICLE_MASS_MIN,
+        PARTICLE_MASS_MAX,
         cpuCores,
         std.crypto.random
     );
