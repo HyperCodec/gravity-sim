@@ -1,3 +1,5 @@
+<img src="doc/replay.gif" alt="cool replay" width="200"/>
+
 # gravity-sim
 A simulation of a bunch of particles and gravitational pull between them.
 
