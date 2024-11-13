@@ -3,14 +3,16 @@ const physics = @import("physics.zig");
 const Vec2f = @import("vector.zig").Vec2f;
 const renderer = @import("renderer.zig");
 
-const STEP_COUNT = 300;
+const STEP_COUNT = 900;
 const FPS = 30;
 const CACHE_DIR = "./replay_cache";
 const OUTPUT_DIR = "./replay.gif";
 
-const SIZE = Vec2f { .x = 1000, .y = 1000 };
+const SIZE = Vec2f { .x = 800, .y = 800 };
 const PARTICLE_COUNT = 1000;
 const TIME_SCALE = 5;
+
+const PARTICLE_SIZE = 5; // does not affect simulation, only rendering.
 
 const DT = 1.0 / @as(f32, FPS);
 
@@ -52,7 +54,7 @@ pub fn main() !void {
         const filename = try std.fmt.allocPrint(alloc, "frame{}.png", .{i});
         const path = try std.fs.path.joinZ(alloc, &[_][]const u8{CACHE_DIR, filename});
 
-        renderer.cache_frame(path.ptr, .{ .base = sim.particles.items.ptr, .len = sim.particles.items.len}, sim.bounds);
+        renderer.cache_frame(PARTICLE_SIZE, path.ptr, .{ .base = sim.particles.items.ptr, .len = sim.particles.items.len}, sim.bounds);
         
         pb.completeOne();
     }

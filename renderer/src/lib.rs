@@ -23,7 +23,7 @@ pub struct EnvironmentBounds {
 }
 
 #[no_mangle]
-pub extern "C" fn cache_frame(dir: *const c_char, particles: CSlice<PhysicsParticle>, bounds: EnvironmentBounds) {
+pub extern "C" fn cache_frame(particle_size: u32, dir: *const c_char, particles: CSlice<PhysicsParticle>, bounds: EnvironmentBounds) {
     let mut image: Image<Rgba> = Image::new(bounds.size.x as u32, bounds.size.y as u32, Rgba::black());
 
     for particle in particles.as_ref() {
@@ -32,7 +32,7 @@ pub extern "C" fn cache_frame(dir: *const c_char, particles: CSlice<PhysicsParti
                 (particle.position.x - bounds.top_left.x) as u32,
                 (particle.position.y - bounds.top_left.y) as u32
             ),
-            radii: (5, 5),
+            radii: (particle_size, particle_size),
             // TODO radial gradient fill.
             fill: Some(SolidFill::new(Rgba {
                 r: 255,
