@@ -1,7 +1,7 @@
 const std = @import("std");
 const Vec2f = @import("vector.zig").Vec2f;
 
-pub const G = 6.67e-11;
+pub const G = 6.6743e-11;
 
 pub const PhysicsParticle = extern struct {
     const Self = @This();
@@ -26,7 +26,7 @@ pub const PhysicsParticle = extern struct {
     }
 
     pub fn gravityStrength(self: Self, other: Self) f32 {
-        const distSquared = self.position.sub(other.position).magSquared();
+        const distSquared = @max(self.position.sub(other.position).magSquared(), 1.0);
         return self.mass * other.mass * G / distSquared;
     }
 
@@ -121,6 +121,7 @@ pub const PhysicsEnvironment = struct {
         }
     }
 
+    // TODO prob some race conditions
     pub fn stepParticles(self: *Self, dt: f32) !void {
         const tasksPerThread = @divFloor(self.particles.items.len, self.threadCount);
         
