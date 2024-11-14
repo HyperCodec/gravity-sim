@@ -96,8 +96,14 @@ pub const PhysicsEnvironment = struct {
         defer threads.deinit();
 
         for(0..self.threadCount) |threadNum| {
+            const max = if(threadNum == self.threadCount-1 and self.particles.items.len % tasksPerThread != 0)
+                // account for the remaining few
+                self.particles.items.len-1
+            else
+                (threadNum + 1) * tasksPerThread;
+
             const t = try std.Thread.spawn(.{}, applyGravityForRange,
-            .{self, threadNum * tasksPerThread, (threadNum + 1) * tasksPerThread, dt});
+            .{self, threadNum * tasksPerThread, max, dt});
             try threads.append(t);
         }
 
@@ -132,8 +138,14 @@ pub const PhysicsEnvironment = struct {
 
         const bottomRight = self.bounds.bottomRight();
         for(0..self.threadCount) |threadNum| {
+            const max = if(threadNum == self.threadCount-1 and self.particles.items.len % tasksPerThread != 0)
+                // account for the remaining few
+                self.particles.items.len
+            else
+                (threadNum + 1) * tasksPerThread;
+
             const t = try std.Thread.spawn(.{}, stepParticlesForRange,
-            .{self, bottomRight, threadNum * tasksPerThread, (threadNum + 1) * tasksPerThread, dt});
+            .{self, bottomRight, threadNum * tasksPerThread, max, dt});
             try threads.append(t);
         }
 
