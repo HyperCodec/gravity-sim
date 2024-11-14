@@ -4,7 +4,31 @@
 A simulation of a bunch of particles and gravitational pull between them.
 
 ## Configuration
-I was too lazy to make a CLI, so constants in [`main.zig`](src/main.zig) and [`physics.zig`](src/physics.zig) are the only config rn. Might use `zig-cli` or something later if I'm not too lazy.
+Configuration must be done via CLI:
+```
+gravity-sim
+
+USAGE:
+  gravity-sim [OPTIONS]
+
+Performs a simple gravity simulation and renders the output to a GIF.
+
+OPTIONS:
+      --steps <VALUE>               The number of steps (frames) to simulate
+      --fps <VALUE>                 The number of frames per second
+      --cache <VALUE>               The folder to cache individual frames of the replay
+      --output <VALUE>              The output GIF path
+      --sim-width <VALUE>           The simulation/frame width
+      --sim-height <VALUE>          The simulation/frame height
+      --particle-count <VALUE>      The number of particles to spawn
+      --particle-size <VALUE>       The particle size used in rendering
+      --particle-mass-min <VALUE>   The minimum random bound for particle mass
+      --particle-mass-max <VALUE>   The maximum random bound for particle mass
+      --threads <VALUE>             The number of threads to use. If null, it uses the number of CPU cores
+      --time-scale <VALUE>          How many times faster to make the simulation than real time (good option if you're impatient)
+  -h, --help                        Show this help output.
+      --color <VALUE>               When to use colors (*auto*, never, always).
+```
 
 ## Building from scratch
 If you get any errors about libraries not found, you probably just need to install `libc, libwebp, and libgcc`. All of these assume you have done `git clone https://github.com/HyperCodec/gravity-sim && cd gravity-sim` (or something of the sort).

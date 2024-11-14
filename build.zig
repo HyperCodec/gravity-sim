@@ -22,6 +22,12 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const cli = b.dependency("zig-cli", .{
+        .target = target,
+        .optimize = optimize
+    });
+    exe.root_module.addImport("zig-cli", cli.module("zig-cli"));
+
     // rust renderer lib
     exe.linkLibC();
     exe.addLibraryPath(.{ .cwd_relative = "./renderer/target/release/" });
