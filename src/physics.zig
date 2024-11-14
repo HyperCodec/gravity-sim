@@ -98,7 +98,7 @@ pub const PhysicsEnvironment = struct {
         for(0..self.threadCount) |threadNum| {
             const max = if(threadNum == self.threadCount-1 and self.particles.items.len % tasksPerThread != 0)
                 // account for the remaining few
-                self.particles.items.len-1
+                self.particles.items.len
             else
                 (threadNum + 1) * tasksPerThread;
 
