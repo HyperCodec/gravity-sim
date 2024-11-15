@@ -5,7 +5,7 @@ ADD ./renderer .
 
 RUN cargo build --release
 
-FROM ziglings/ziglang:latest AS zig
+FROM hypercodec2/ziglang-alpine:latest AS zig
 WORKDIR /app
 
 COPY --from=rust /app/target/release/librenderer.so ./renderer/target/release/librenderer.so
