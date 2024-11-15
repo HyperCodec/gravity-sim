@@ -44,7 +44,7 @@ zig build
 ```
 
 ### Windows
-Kind of broken, same thing as linux but move `renderer/target/release/renderer.dll` to `zig-out` after the `cargo build --release` step. If that doesn't work you can `docker build .`.
+Kind of broken, same thing as linux but move `renderer/target/release/renderer.dll` to `zig-out/bin` after the `cargo build --release` step. If that doesn't work you can `docker build .`.
 
 ### Mac
 Not sure (I don't own a mac). It's probably like Linux but if that doesn't work there's always `docker build .`.
